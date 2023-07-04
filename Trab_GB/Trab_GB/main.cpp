@@ -132,6 +132,7 @@ int main()
     }
     std::cout << "Loaded " << rez * rez << " patches of 4 control points each" << std::endl;
     std::cout << "Processing " << rez * rez * 4 << " vertices in vertex shader" << std::endl;
+
     // first, configure the cube's VAO (and terrainVBO)
     unsigned int terrainVAO, terrainVBO;
     glGenVertexArrays(1, &terrainVAO);
@@ -144,12 +145,13 @@ int main()
     // POSITION ATTRIBUTE
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
     // TEXCOORD ATTRIBUTE
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
     glEnableVertexAttribArray(1);
 
-
     glPatchParameteri(GL_PATCH_VERTICES, NUM_PATCH_PTS);
+
 
     // render loop
     // -----------
@@ -187,8 +189,17 @@ int main()
         tessHeightMapShader.setMat4("model", model);
 
         // render the terrain
-        glBindVertexArray(terrainVAO);
+  /*      glBindVertexArray(terrainVAO);*/
+
         glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
+
+        gNormalShader.use();
+        gNormalShader.setMat4("projection", projection);
+        gNormalShader.setMat4("view", view);
+        gNormalShader.setMat4("model", model);
+
+        glBindVertexArray(terrainVAO);
+        glDrawArrays(GL_TRIANGLES, 0, NUM_PATCH_PTS * rez * rez * 3);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
