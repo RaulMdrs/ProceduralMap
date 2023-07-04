@@ -1,0 +1,84 @@
+#version 410 core
+layout (quads, fractional_odd_spacing, ccw) in;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+uniform float scale;  // Perlin noise scale
+uniform float persistence;  // Perlin noise persistence
+uniform int octaves;  // Number of Perlin noise octaves
+
+in vec2 TextureCoord[];
+
+out float Height;
+
+float random(vec2 st)
+{
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+float noise(vec2 st)
+{
+    vec2 i = floor(st);
+    vec2 f = fract(st);
+
+    float a = random(i);
+    float b = random(i + vec2(1.0, 0.0));
+    float c = random(i + vec2(0.0, 1.0));
+    float d = random(i + vec2(1.0, 1.0));
+
+    vec2 u = f * f * (3.0 - 2.0 * f);
+
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float perlin(vec2 st)
+{
+    float value = 0.0;
+    float amplitude = 1.0;
+    float totalAmplitude = 0.0;
+
+    for (int i = 0; i < octaves; i++)
+    {
+        value += noise(st * scale) * amplitude;
+        st *= 2.0;
+        amplitude *= persistence;
+        totalAmplitude += amplitude;
+    }
+
+    return value / totalAmplitude;
+}
+
+void main()
+{
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+
+    vec2 t00 = TextureCoord[0];
+    vec2 t01 = TextureCoord[1];
+    vec2 t10 = TextureCoord[2];
+    vec2 t11 = TextureCoord[3];
+
+    vec2 t0 = (t01 - t00) * u + t00;
+    vec2 t1 = (t11 - t10) * u + t10;
+    vec2 texCoord = (t1 - t0) * v + t0;
+
+    float noiseValue = perlin(texCoord);
+    Height = noiseValue * 64 * 8;  // Remove the scaling factor
+
+    vec4 p00 = gl_in[0].gl_Position;
+    vec4 p01 = gl_in[1].gl_Position;
+    vec4 p10 = gl_in[2].gl_Position;
+    vec4 p11 = gl_in[3].gl_Position;
+
+    vec4 uVec = p01 - p00;
+    vec4 vVec = p10 - p00;
+    vec4 normal = normalize(vec4(cross(vVec.xyz, uVec.xyz), 0));
+
+    vec4 p0 = (p01 - p00) * u + p00;
+    vec4 p1 = (p11 - p10) * u + p10;
+    vec4 p = (p1 - p0) * v + p0 + normal * Height;
+
+    gl_Position = projection * view * model * p;
+}
