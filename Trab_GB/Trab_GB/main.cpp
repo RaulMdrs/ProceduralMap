@@ -93,10 +93,10 @@ int main()
     // build and compile our shader program
     // ------------------------------------
     Shader tessHeightMapShader("8.3.gpuheight.vs", "8.3.gpuheight.fs",
-        "8.3.gpuheight.tcs", "8.3.gpuheight.tes");
+        "8.3.gpuheight.tcs", "8.3.gpuheight.tes", nullptr);
 
-    Shader gNormalShader("geometryShader/9.3.normal_visualization.vs", "geometryShader/9.3.normal_visualization.fs", 
-        nullptr, nullptr, "geometryShader/9.3.normal_visualization.gs");
+    Shader gNormalShader("8.3.gpuheight.vs", "geometryShader/9.3.normal_visualization.fs",
+        "8.3.gpuheight.tcs", "geometryShader/9.3.normal_visualization.tes", "geometryShader/9.3.normal_visualization.gs");
 
     std::vector<float> vertices;
 
@@ -194,12 +194,15 @@ int main()
         glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 
         gNormalShader.use();
+        gNormalShader.setFloat("scale", SCALE);
+        gNormalShader.setFloat("persistence", PERSISTENCE);
+        gNormalShader.setInt("octaves", OCTAVES);
         gNormalShader.setMat4("projection", projection);
         gNormalShader.setMat4("view", view);
         gNormalShader.setMat4("model", model);
 
         glBindVertexArray(terrainVAO);
-        glDrawArrays(GL_TRIANGLES, 0, NUM_PATCH_PTS * rez * rez * 3);
+        glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

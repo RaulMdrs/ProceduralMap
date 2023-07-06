@@ -11,7 +11,10 @@ uniform int octaves;  // Number of Perlin noise octaves
 
 in vec2 TextureCoord[];
 
-out float Height;
+out VS_OUT {
+    vec4 normal;
+    float Height;
+} vs_out;
 
 float random(vec2 st)
 {
@@ -58,6 +61,9 @@ vec4 calcNormal(vec4 p00, vec4 p01, vec4 p10) {
 
 void main()
 {
+    vec4 Normal;
+    float height;
+
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
 
@@ -71,18 +77,21 @@ void main()
     vec2 texCoord = (t1 - t0) * v + t0;
 
     float noiseValue = perlin(texCoord);
-    Height = noiseValue * 64 * 8;  // Remove the scaling factor
+    height = noiseValue * 64 * 8;  // Remove the scaling factor
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;
     vec4 p10 = gl_in[2].gl_Position;
     vec4 p11 = gl_in[3].gl_Position;
 
-    vec4 normal = calcNormal(p00, p01, p10);
+    Normal = calcNormal(p00, p01, p10);
 
     vec4 p0 = (p01 - p00) * u + p00;
     vec4 p1 = (p11 - p10) * u + p10;
-    vec4 p = (p1 - p0) * v + p0 + normal * Height;
+    vec4 p = (p1 - p0) * v + p0 + Normal * height;
+
+    vs_out.normal = Normal;
+    vs_out.Height = height;
 
     gl_Position = projection * view * model * p;
 }
