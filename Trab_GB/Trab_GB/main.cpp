@@ -20,11 +20,11 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 1200;
 const unsigned int NUM_PATCH_PTS = 4;
-const int MAP_WIDTH = 5000;
-const int MAP_HEIGHT = 5000;
+const int MAP_WIDTH = 2000;
+const int MAP_HEIGHT = 2000;
 float SCALE = 1.0f;
 float PERSISTENCE = 1.5f;
-int OCTAVES = 5;
+int OCTAVES = 10;
 
 glm::vec3 lightPos(0.0f, 20.0f, 0.0f);
 // camera - give pretty starting point
@@ -189,8 +189,6 @@ int main()
         tessHeightMapShader.setMat4("model", model);
 
         // render the terrain
-  /*      glBindVertexArray(terrainVAO);*/
-
         glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 
         gNormalShader.use();
@@ -201,7 +199,6 @@ int main()
         gNormalShader.setMat4("view", view);
         gNormalShader.setMat4("model", model);
 
-        glBindVertexArray(terrainVAO);
         glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
